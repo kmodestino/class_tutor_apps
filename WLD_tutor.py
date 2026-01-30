@@ -43,7 +43,8 @@ def get_retriever():
     )
     
     try:
-        vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
+        # Create the vectorstore in smaller batches to avoid the 429 error
+        vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings, batch_size=5)
         return vectorstore.as_retriever()
     except Exception as e:
         # This will show you the ACTUAL error in the app UI
