@@ -6,3 +6,4 @@ langchain-google-genai
 langchain-chroma
 pypdf
 pysqlite3-binary
+sentence-transformers
