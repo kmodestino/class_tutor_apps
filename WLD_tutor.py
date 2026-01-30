@@ -22,18 +22,33 @@ except Exception as e:
 # 2. Ingestion Logic (Cached for speed)
 @st.cache_resource
 def get_retriever():
-    vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
-    return vectorstore.as_retriever()
-    loader = PyPDFLoader("Data/RAT Discussion Guide.pdf")
-    docs = loader.load()
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-    splits = text_splitter.split_documents(docs)
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-    google_api_key=st.secrets["GOOGLE_API_KEY"]  # Add this line!
-    vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
-    return vectorstore.as_retriever()
+    base_path = os.path.dirname(__file__)
+    file_path = os.path.join(base_path, "data", "RAT Discussion Guide.pdf")
+    
+    # 1. Check if file exists
+    if not os.path.exists(file_path):
+        st.error(f"Critical Error: File not found at {file_path}")
+        # Stop the function here so it doesn't try to use 'splits'
+        return None 
 
-retriever = get_retriever()
+    # 2. Load and Split
+    loader = PyPDFLoader(file_path)
+    data = loader.load()
+    
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    
+    # This is where 'splits' is created
+    splits = text_splitter.split_documents(data)
+    
+    # 3. Embedding logic (Ensure the API key is passed here)
+    embeddings = GoogleGenerativeAIEmbeddings(
+        model="models/embedding-001",
+        google_api_key=st.secrets["GOOGLE_API_KEY"]
+    )
+    
+    # Now 'splits' is guaranteed to exist if we reach this line
+    vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
+    return vectorstore.as_retriever()
 
 # 3. Pedagogy Persona
 SYSTEM_PROMPT = """
