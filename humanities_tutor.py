@@ -47,7 +47,7 @@ st.set_page_config(page_title="WLD Tutor")
 
 # UI Elements
 st.title("Humanities I Tutor")
-st.markdown("### Course: Humanities I
+st.markdown("### Course: Humanities I")
 st.info("Reminder: Do not share personal data or names with the Tutor.")
 
 # 3. Initialize chat history
