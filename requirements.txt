@@ -6,4 +6,5 @@ langchain-google-genai
 langchain-chroma
 pypdf
 pysqlite3-binary
+langchain-huggingface
 sentence-transformers
