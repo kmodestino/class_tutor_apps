@@ -8,6 +8,7 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_chroma import Chroma 
+from langchain_huggingface import HuggingFaceEmbeddings
 
 # MUST BE FIRST
 st.set_page_config(page_title="WLD Tutor")
@@ -23,31 +24,32 @@ except Exception as e:
 @st.cache_resource
 def get_retriever():
     base_path = os.path.dirname(__file__)
+    # Note: Ensure "Data" vs "data" matches your folder name exactly!
     file_path = os.path.join(base_path, "Data", "RAT Discussion Guide.pdf")
     
     if not os.path.exists(file_path):
         st.error(f"File not found at: {file_path}")
         return None
 
+    # 1. Load the PDF
     loader = PyPDFLoader(file_path)
     data = loader.load()
     
-    # REDUCED CHUNK SIZE: Smaller chunks help avoid Google's Rate Limits
+    # 2. Split the text
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
     splits = text_splitter.split_documents(data)
     
-    # EXPLICIT KEY: Hand the key directly to the embedding model
-    embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/embedding-001",
-        google_api_key=st.secrets["GOOGLE_API_KEY"]
-    )
+    # 3. Use HuggingFace (Local) - This avoids the 429 and batch_size errors
+    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     
     try:
-        # Create the vectorstore in smaller batches to avoid the 429 error
-        vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings, batch_size=5)
+        # 4. Build the vector database
+        vectorstore = Chroma.from_documents(
+            documents=splits, 
+            embedding=embeddings
+        )
         return vectorstore.as_retriever()
     except Exception as e:
-        # This will show you the ACTUAL error in the app UI
         st.error(f"Embedding Error: {e}")
         return None
 
