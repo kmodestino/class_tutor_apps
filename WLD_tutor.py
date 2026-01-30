@@ -49,6 +49,8 @@ def get_retriever():
     # Now 'splits' is guaranteed to exist if we reach this line
     vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
     return vectorstore.as_retriever()
+# This line runs the function and saves the result so the chatbot can use it
+retriever = get_retriever()
 
 # 3. Pedagogy Persona
 SYSTEM_PROMPT = """
