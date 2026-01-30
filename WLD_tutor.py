@@ -9,6 +9,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_chroma import Chroma 
 from langchain_huggingface import HuggingFaceEmbeddings
+from tenacity import retry, stop_after_attempt, wait_random_exponential
 
 # MUST BE FIRST
 st.set_page_config(page_title="WLD Tutor")
@@ -99,8 +100,10 @@ RULES FOR USING THE STUDY GUIDE:
    to the course material or answer briefly using your general knowledge. Course material extends beyond Ruha Benjamin, and you should also be willing to give writing advice.
 
 """ 
-
-# UI Elements
+@retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(5))
+def safe_generate_content(model, contents):
+    """This function will now automatically retry if it hits a 429 error."""
+    return model.generate_content(contents)
 st.title("WLD Tutor")
 st.markdown("### Course: Critical Algorithmic Literacy")
 
@@ -136,4 +139,6 @@ if prompt := st.chat_input("What do you need help with?"):
             st.session_state.messages.append({"role": "assistant", "content": response.text})
             
         except Exception as e:
-            st.error(f"An error occurred: {e}")
+            # If even the retries fail, we show this polite error
+            st.error("I'm currently over-capacity even after several attempts. Please try again in a minute!")
+            print(f"Debug Error: {e}")
