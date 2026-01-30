@@ -19,11 +19,14 @@ except Exception as e:
 # 2. Ingestion Logic (Cached for speed)
 @st.cache_resource
 def get_retriever():
+    vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
+    return vectorstore.as_retriever()
     loader = PyPDFLoader("Data/RAT Discussion Guide.pdf")
     docs = loader.load()
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     splits = text_splitter.split_documents(docs)
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    google_api_key=st.secrets["GOOGLE_API_KEY"]  # Add this line!
     vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
     return vectorstore.as_retriever()
 
