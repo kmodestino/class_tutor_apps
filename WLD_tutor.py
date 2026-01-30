@@ -23,7 +23,7 @@ except Exception as e:
 @st.cache_resource
 def get_retriever():
     base_path = os.path.dirname(__file__)
-    file_path = os.path.join(base_path, "data", "RAT Discussion Guide.pdf")
+    file_path = os.path.join(base_path, "Data", "RAT Discussion Guide.pdf")
     
     # 1. Check if file exists
     if not os.path.exists(file_path):
