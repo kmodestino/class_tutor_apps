@@ -35,7 +35,7 @@ def get_retriever():
     loader = PyPDFLoader(file_path)
     data = loader.load()
     
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=200)
     
     # This is where 'splits' is created
     splits = text_splitter.split_documents(data)
