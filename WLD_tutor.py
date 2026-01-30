@@ -19,7 +19,7 @@ except Exception as e:
 # 2. Ingestion Logic (Cached for speed)
 @st.cache_resource
 def get_retriever():
-    loader = PyPDFLoader("data/RAT Discussion Guide.pdf")
+    loader = PyPDFLoader("Data/RAT Discussion Guide.pdf")
     docs = loader.load()
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     splits = text_splitter.split_documents(docs)
