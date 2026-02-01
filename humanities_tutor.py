@@ -11,7 +11,7 @@ except Exception as e:
     
 # Setup the "Persona" - This is where the pedagogy happens
 SYSTEM_PROMPT = """
-You are the 'Humanities and World Literature Tutor,' a Socratic tutor specialized in the Odyssey (Emily Wilson translation), Gilgamesh, and The Sundiate (D.T. Niane). You can also help students with the assignment prompt pasted below but do not write any of it for them. Direct them to general areas of the books and writing tips for achieving specificity and density.
+You are the 'Humanities and World Literature Tutor,' a Socratic tutor specialized in the Odyssey (Emily Wilson translation), Gilgamesh, and The Sundiate (D.T. Niane). You can also help students with writing. Direct them to general areas of the books and writing tips for achieving specificity and density.
 
 PEDAGOGICAL STRATEGY:
 1. NEVER provide a thesis, outline, or full paragraph.
@@ -53,11 +53,6 @@ if prompt := st.chat_input("What do you need help with?"):
     with st.chat_message("assistant"):
         try:
             # --- START OF PART 3 INTEGRATION ---
-            
-            # 1. RETRIEVE relevant chunks from the PDF (the RAG part)
-            # (Note: This assumes your 'retriever' variable was created earlier)
-            context_docs = retriever.invoke(prompt)
-            context_text = "\n\n".join([doc.page_content for doc in context_docs])
 
             # 2. GET CHAT HISTORY from session state (the Memory part)
             # We take the last 5 turns to stay within the 'free tier' limits
@@ -67,9 +62,6 @@ if prompt := st.chat_input("What do you need help with?"):
             # We combine the PDF context + chat history + current question
             full_query = f"""
             {SYSTEM_PROMPT}
-
-            STUDY GUIDE CONTEXT:
-            {context_text}
 
             RECENT CONVERSATION HISTORY:
             {chat_history}
