@@ -133,9 +133,10 @@ if prompt := st.chat_input("What do you need help with?"):
             # RETRIEVAL STEP: Get snippets from the RAT Guide
             context_docs = retriever.invoke(prompt)
             context_text = "\n\n".join([doc.page_content for doc in context_docs])
+            chat_history = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-6:-1]])
             
             # AUGMENTATION STEP: Combine context with your persona
-            final_query = f"CONTEXT FROM GUIDE:\n{context_text}\n\nSTUDENT QUESTION: {prompt}"
+            final_query = f"CONTEXT FROM GUIDE:\n{context_text}\n\nSTUDENT QUESTION: {prompt}  {chat_history}"
             
             model = genai.GenerativeModel("gemini-2.5-flash", system_instruction=SYSTEM_PROMPT)
             
