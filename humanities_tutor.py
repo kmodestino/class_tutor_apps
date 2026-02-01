@@ -52,19 +52,49 @@ if prompt := st.chat_input("What do you need help with?"):
 
     with st.chat_message("assistant"):
         try:
-            # Using the latest 2026 stable model
-            model = genai.GenerativeModel("gemini-2.5-flash", system_instruction=SYSTEM_PROMPT)
+            # --- START OF PART 3 INTEGRATION ---
             
-            # Add a small 'thinking' delay to mimic human rhythm
+            # 1. RETRIEVE relevant chunks from the PDF (the RAG part)
+            # (Note: This assumes your 'retriever' variable was created earlier)
+            context_docs = retriever.invoke(prompt)
+            context_text = "\n\n".join([doc.page_content for doc in context_docs])
+
+            # 2. GET CHAT HISTORY from session state (the Memory part)
+            # We take the last 5 turns to stay within the 'free tier' limits
+            chat_history = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-6:-1]])
+
+            # 3. BUILD THE SUPER PROMPT
+            # We combine the PDF context + chat history + current question
+            full_query = f"""
+            {SYSTEM_PROMPT}
+
+            STUDY GUIDE CONTEXT:
+            {context_text}
+
+            RECENT CONVERSATION HISTORY:
+            {chat_history}
+
+            STUDENT QUESTION:
+            {prompt}
+            """
+            # --- END OF PART 3 INTEGRATION ---
+
+            model = genai.GenerativeModel("gemini-2.5-flash") # System prompt is now inside full_query
+            
             with st.spinner("The Tutor is contemplating..."):
-                response = model.generate_content(prompt)
+                # We send 'full_query' instead of just 'prompt'
+                response = model.generate_content(full_query)
                 
             st.markdown(response.text)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
             
         except Exception as e:
-            # Check for the common 'Rate Limit' error (429)
+             # Check for the common 'Rate Limit' error (429)
+
             if "429" in str(e) or "quota" in str(e).lower():
+
                 st.error("⚠️ **The Tutor is overwhelmed!** Too many students are asking questions at once. Please wait 60 seconds for the 'Free Tier' quota to reset.")
+
             else:
-                st.error(f"An unexpected error occurred: {e}")
+
+                st.error(f"An unexpected error occurred: {e}") 
